@@ -5,7 +5,7 @@ Ever needed to monitor a folder for new folders of music and copy them into a di
 
 Running:
 
-> mucopy.exe <path to monitor> <path to copy to>
+> mucopy.exe (path to monitor) (path to copy to)
 
 Example:
 
