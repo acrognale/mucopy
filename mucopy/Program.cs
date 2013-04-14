@@ -85,11 +85,12 @@ namespace mucopy
     {
         static void Main(string[] args)
         {
+            AutoResetEvent autoEvent = new AutoResetEvent(false);
             MusicWatcher music = new MusicWatcher();
             Thread tMusic = new Thread(music.Watch);
             tMusic.Start();
             tMusic.Join();
-            while (true) { }
+            autoEvent.WaitOne();
         }
     }
 }
