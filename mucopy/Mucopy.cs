@@ -27,11 +27,10 @@ namespace mucopy
                     {
                         Console.WriteLine("Found music file at " + file);
                         DirectoryInfo dir = new DirectoryInfo(path);
-                        string[] mData = Metadata.getMetadata(fInfo);
-                        foreach (string m in mData)
-                        {
-                            Console.WriteLine(m);
-                        }
+                        Song mData = Metadata.getMetadata(fInfo);
+                        Console.WriteLine(mData.Album);
+                        Console.WriteLine(mData.AlbumArtists);
+                        Console.WriteLine(mData.Year);
                         if (!Directory.Exists(target))
                         {
                             Directory.CreateDirectory(target);
@@ -46,6 +45,31 @@ namespace mucopy
                 }
             }
             Console.WriteLine("No music found in " + path);
+        }
+        public void ProcessSingle(string path)
+        {
+            string[] args = System.Environment.GetCommandLineArgs();
+            string[] filters = { ".mp3", ".flac", ".m4a", ".wav", ".aac", ".ogg", ".wma" };
+            string Target = Path.Combine(args[2], Path.GetFileName(path));
+            FileInfo fInfo = new FileInfo(path);
+            Console.WriteLine("Copying to " + Target);
+            foreach (string format in filters)
+            {
+                if (fInfo.Extension == format)
+                {
+                    Console.WriteLine("Found music file at " + path);
+                    Song mData = Metadata.getMetadata(fInfo);
+                    Console.WriteLine(mData.Album);
+                    Console.WriteLine(mData.AlbumArtists);
+                    Console.WriteLine(mData.Year);
+                    if (!Directory.Exists(Target))
+                    {
+                        //Directory.CreateDirectory(Target);
+                    }
+                    //fInfo.CopyTo(Path.Combine(Target, fInfo.Name), false);
+                    return;
+                }
+            }
         }
     }
     public class MusicWatcher
@@ -72,18 +96,28 @@ namespace mucopy
                 EventLog.WriteEntry(sSource, "Please run mucopy with the directory path and target path", System.Diagnostics.EventLogEntryType.Error);
             }
 
-            FileSystemWatcher watcher = new FileSystemWatcher();
-            watcher.Path = args[1];
-            watcher.NotifyFilter = NotifyFilters.DirectoryName;
-            watcher.IncludeSubdirectories = true;
-            watcher.Created += new FileSystemEventHandler(onCreated);
-            watcher.EnableRaisingEvents = true;
+            FileSystemWatcher FolderWatcher = new FileSystemWatcher();
+            FolderWatcher.Path = args[1];
+            FolderWatcher.NotifyFilter = NotifyFilters.DirectoryName;
+            FolderWatcher.IncludeSubdirectories = true;
+            FolderWatcher.Created += new FileSystemEventHandler(onCreatedFolder);
+            FolderWatcher.EnableRaisingEvents = true;
+
+            FileSystemWatcher SingleWatcher = new FileSystemWatcher();
+            SingleWatcher.Path = args[1];
+            SingleWatcher.NotifyFilter = NotifyFilters.FileName;
+            SingleWatcher.IncludeSubdirectories = false;
+            SingleWatcher.Created += new FileSystemEventHandler(onCreatedSingle);
+            SingleWatcher.EnableRaisingEvents = true;
         }
 
-        private static void onCreated(object source, FileSystemEventArgs e)
+        private static void onCreatedFolder(object source, FileSystemEventArgs e)
         {
-            Console.WriteLine("New music found: " + e.FullPath);
             mWorker.ProcessFolder(e.FullPath);
+        }
+        private static void onCreatedSingle(object source, FileSystemEventArgs e)
+        {
+            mWorker.ProcessSingle(e.FullPath);
         }
     }
     class Mucopy

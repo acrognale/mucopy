@@ -8,13 +8,23 @@ using TagLib;
 
 namespace mucopy
 {
-    class Metadata
+    public class Song
     {
-        public static string[] getMetadata(FileInfo song)
+        public string Album { get; set; }
+        public string[] AlbumArtists { get; set; }
+        public uint Year { get; set; }
+    }
+    public class Metadata
+    {
+
+        public static Song getMetadata(FileInfo song)
         {
+            Song tmpSong = new Song();
             TagLib.File tFile = TagLib.File.Create(song.FullName);
-            string[] metadata = { tFile.Tag.Album, tFile.Tag.AlbumArtists.ToString(), tFile.Tag.Year.ToString() };
-            return metadata;
+            tmpSong.Album = tFile.Tag.Album;
+            tmpSong.AlbumArtists = tFile.Tag.AlbumArtists;
+            tmpSong.Year = tFile.Tag.Year;
+            return tmpSong;
         }
     }
 }
